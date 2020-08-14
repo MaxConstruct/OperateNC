@@ -20,6 +20,8 @@ lon_bound = [min_lon, max_lon]
 lat_bound = [min_lat, max_lat]
 # %%
 sample_path = r'H:\CMIP6 - SEA\IPSL-CM6A-LR\tasmax\historical\SEA_tasmax_day_IPSL-CM6A-LR_historical_r1i1p1f1_gr_18500101-20141231.nc'
+
+#%%
 sea = ut.sea_dataset()
 
 
