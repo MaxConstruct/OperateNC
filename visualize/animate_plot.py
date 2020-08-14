@@ -4,11 +4,9 @@ import matplotlib.animation as anim
 from cartopy.mpl.geoaxes import GeoAxes
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
-import main.util as util
-import os
+import util.netcdf_util as util
 import xarray as xr
 import cartopy.feature as cfeat
-import animatplot as amp
 
 GeoAxes._pcolormesh_patched = Axes.pcolormesh
 
