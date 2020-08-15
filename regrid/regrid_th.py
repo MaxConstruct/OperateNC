@@ -25,6 +25,7 @@ sample_path = r'H:\CMIP6 - SEA\IPSL-CM6A-LR\tasmax\historical\SEA_tasmax_day_IPS
 sea = ut.sea_dataset()
 
 
+
 #%%
 new_lon, new_lat = ut.new_coord_array(lat_bound=lat_bound, lon_bound=lon_bound, res=resolution)
 #%%

@@ -8,11 +8,14 @@ import xarray as xr
 import numpy as np
 
 # matplotlib for plotting Dataset. cartopy for various map projection
+from distributed.deploy.old_ssh import bcolors
 from matplotlib.axes import Axes
 from cartopy.mpl.geoaxes import GeoAxes
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
+
+from setting import SEA_MODEL, TEST_ROOT_DIR
 
 # matplotlib setting
 GeoAxes._pcolormesh_patched = Axes.pcolormesh
@@ -24,10 +27,10 @@ country_borders = cfeature.NaturalEarthFeature(
     name='admin_0_boundary_lines_land',
     scale='50m',
     facecolor='none')
+
+
 # %%
 # Configuration and setting for project.
-TEST_ROOT_DIR = r'H:\CMIP6 - Test'
-SEA_MODEL = r'SAMPLE - pr_SEA-25_HadGEM2-AO_historical_r1i1p1_WRF_v3-5_day_197101-198012.nc'
 
 
 def listdir_abs(path, condition=None):
@@ -47,7 +50,7 @@ def sea_dataset():
     Get SEA sample dataset
     :return: xarray Dataset
     """
-    return xr.open_dataset(os.path.join(TEST_ROOT_DIR, SEA_MODEL))
+    return xr.open_dataset(SEA_MODEL)
 
 
 def shift_to_180(data):
@@ -187,3 +190,83 @@ def plot(data: xr.DataArray, time=None, savefig=None, show=True, set_global=Fals
         plt.show()
     plt.clf()
     plt.close()
+
+
+def merge_regrid(paths, out_dst, preprocess, _open_option=None, _save_option=None):
+    """
+    Open multiple dataset from list of paths, then, merging and regridding
+    and save processing file as netcdf.
+
+    :param preprocess: Preprocess option
+    :param paths: list of paths of dataset to open and merge
+    :param out_dst: path to save processed dataset
+    :param _open_option: dictionary option pass to xarray.open_mfdatset
+    :param _save_option: dictionary option pass to xarray.Dataset.to_netcdf
+    :return: Status of the operation as tuple (boolean, message)
+    If operation is success return (True, 'success') otherwise, (False, error message)
+    """
+
+    if _save_option is None:
+        _save_option = {}
+    if _open_option is None:
+        _open_option = {}
+
+    try:
+        with xr.open_mfdataset(paths=paths,
+                               preprocess=preprocess,
+                               parallel=True,
+                               **_open_option) as mf_dataset:
+            os.makedirs(os.path.dirname(out_dst), exist_ok=True)
+            mf_dataset.to_netcdf(out_dst, **_save_option)
+
+    # Old code
+
+        # if h5netcdf_engine:
+        #     with xr.open_mfdataset(paths,
+        #                            preprocess=preprocess,
+        #                            concat_dim='time',
+        #                            parallel=True,
+        #                            chunks={'time': 3000},
+        #                            engine='h5netcdf',
+        #                            # decode_cf=True
+        #                            ) as mf_dataset:
+        #         encoding = {var: comp for var in mf_dataset.data_vars}
+        #         os.makedirs(os.path.dirname(out_dst), exist_ok=True)
+        #         mf_dataset.to_netcdf(out_dst,
+        #                              engine='h5netcdf',
+        #                              encoding=encoding
+        #                              )
+        # else:
+        #     with xr.open_mfdataset(paths,
+        #                            preprocess=preprocess,
+        #                            concat_dim='time',
+        #                            parallel=True,
+        #                            chunks={'time': 3000},
+        #                            # decode_cf=True
+        #                            ) as mf_dataset:
+        #         encoding = {var: comp for var in mf_dataset.data_vars}
+        #         os.makedirs(os.path.dirname(out_dst), exist_ok=True)
+        #         mf_dataset.to_netcdf(out_dst,
+        #                              encoding=encoding
+        #                              )
+
+    except Exception as ex:
+        print('\t\t', f"{bcolors.FAIL}Error {bcolors.ENDC} {str(ex)}")
+        return False, str(ex)
+
+    return True, 'success'
+
+
+def time_range(_paths):
+    """
+    Get time range from given list of paths
+    example:
+        [foo_1908-1909.nc, foo_1910-1911.nc, ..., foo_2019-2020.nc]
+        will return: '1908-2020'
+
+    :param _paths: list contains names
+    :return: New name with lowest time range to max
+    """
+    t0 = _paths[0].split('_')[-1].split('-')[0]
+    t1 = _paths[-1].split('_')[-1].split('-')[-1].replace('.nc', '')
+    return '{}-{}'.format(t0, t1)

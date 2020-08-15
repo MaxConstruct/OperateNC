@@ -1,0 +1,9 @@
+conda install -c conda-forge xarray dask netCDF4 bottleneck
+conda install -c anaconda scipy
+conda install -c conda-forge matplotlib
+conda install -c conda-forge cartopy
+conda install -c anaconda pytest
+conda install h5py
+conda install -c conda-forge h5netcdf
+conda install -c conda-forge rasterio
+conda install -c conda-forge rioxarray
