@@ -1,4 +1,6 @@
 # %%
+from pathlib import Path
+
 import xarray as xr
 import os
 import numpy as np
@@ -9,9 +11,9 @@ from distributed.deploy.old_ssh import bcolors
 
 import util.netcdf_util as ut
 from setting import CMIP6_PATH, CMIP6_SEA
-from util.file_util import wsl_paths
+from util.file_util import wsl_paths, wsl_path
 
-logging.basicConfig(filename=r'C:\Users\DEEP\PycharmProjects\NCFile\log\error.log',
+logging.basicConfig(filename=wsl_path(r'C:\Users\DEEP\PycharmProjects\NCFile\log\error.log'),
                     filemode='a',
                     level=logging.DEBUG,
                     format='%(asctime)s %(message)s',
@@ -21,7 +23,7 @@ logging.basicConfig(filename=r'C:\Users\DEEP\PycharmProjects\NCFile\log\error.lo
 warnings.filterwarnings("ignore")
 # %%
 
-output_path = CMIP6_SEA
+output_root = CMIP6_SEA
 
 variables = ['pr', 'tasmax', 'tasmin', 'mrro']
 time_labels = ['historical', 'ssp245', 'ssp585']
@@ -45,7 +47,7 @@ def within_time_range(_name: str, limit=21001231):
 
 
 # %%
-def file_name(_paths):
+def file_name_from_merge(_paths):
     """
     Get new name from from given list of paths
     example:
@@ -54,7 +56,7 @@ def file_name(_paths):
     :param _paths: list that contain names
     :return: New formatted name
     """
-    p = os.path.basename(_paths[0])
+    p = str(_paths[0].name)
     return 'SEA_{}_{}.nc'.format('_'.join(p.split('_')[:-1]), ut.time_range(_paths))
 
 
@@ -164,36 +166,39 @@ count = 1
 error = []
 for src_path in working_path:
 
-    # Checking if path is not in skipping list
-    if src_path not in skip:
+    # Get all file path in directory that satisfy time limit. In this case, 31 Dec 2100.
+    # File that has time range more than limit will not include in the list.
+    paths = [p for p in src_path.iterdir() if within_time_range(str(p), limit=21001231)]
 
-        # Get all file path in directory that satisfy time limit. In this case, 31 Dec 2100.
-        # File that has time range more than limit will not include in the list.
-        paths = ut.listdir_abs(src_path, condition=within_time_range(src_path, limit=21001231))
+    # Checking if path is not in skipping list
+    if str(src_path) not in skip and len(paths) != 0:
 
         # Get new merged file name
-        name = file_name(paths)
+        new_name = file_name_from_merge(paths)
 
         # New path for saving file
-        out_path = os.path.join(src_path.replace(str(CMIP6_PATH), str(output_path), name))
+        out_path = Path(str(src_path).replace(str(CMIP6_PATH), str(output_root)), new_name)
 
         # It will skip this file if file already exist in output directory
-        if not os.path.exists(out_path):
+        print(f'{bcolors.OKBLUE}File[{count}/{size}]:', out_path)
+        if not out_path.exists():
             print(f'{bcolors.OKBLUE}File[{count}/{size}]:', out_path)
             status = ut.merge_regrid(paths=paths,
                                      out_dst=out_path,
+                                     preprocess=preprocess,
                                      _open_option=open_option,
                                      _save_option=save_option
                                      )
 
             # If operation is not success logging an error information.
             if not status[0]:
-                error_info = [count, name, src_path, out_path]
+                error_info = [count, new_name, src_path, out_path]
                 logging.error('File[{count}/{size}]: ' + ' '.join(error_info))
                 error.append(error_info)
 
                 # Delete an error file
-                if os.path.exists(out_path):
-                    os.remove(out_path)
+                if out_path.exists():
+                    out_path.unlink(missing_ok=True)
+        count += 1
 
 print('All Done')

@@ -30,20 +30,6 @@ country_borders = cfeature.NaturalEarthFeature(
 
 
 # %%
-# Configuration and setting for project.
-
-
-def listdir_abs(path, condition=None):
-    """
-    :param path: path of directory
-    :param condition: condition to filter names in directory
-    :return: List of files in the directory with absolute path.
-    """
-    if condition is None:
-        return [os.path.join(path, i) for i in os.listdir(path)]
-    else:
-        return [os.path.join(path, i) for i in os.listdir(path) if condition(i)]
-
 
 def sea_dataset():
     """
@@ -267,6 +253,6 @@ def time_range(_paths):
     :param _paths: list contains names
     :return: New name with lowest time range to max
     """
-    t0 = _paths[0].split('_')[-1].split('-')[0]
-    t1 = _paths[-1].split('_')[-1].split('-')[-1].replace('.nc', '')
+    t0 = str(_paths[0]).split('_')[-1].split('-')[0]
+    t1 = str(_paths[-1]).split('_')[-1].split('-')[-1].replace('.nc', '')
     return '{}-{}'.format(t0, t1)
