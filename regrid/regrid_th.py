@@ -4,7 +4,7 @@ Regrid and crop thailand only
 """
 
 import xarray as xr
-import xesmf as xe
+# import xesmf as xe
 import numpy as np
 import util.netcdf_util as ut
 from util.file_util import wsl_path
