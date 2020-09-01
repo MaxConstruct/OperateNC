@@ -93,8 +93,8 @@ new_lon = sea_dataset['lon']
 new_lat = sea_dataset['lat']
 
 # boundary for south east asia
-lon_bnds = [-12, 24.5]
-lat_bnds = [92.5, 142.5]
+lat_bnds = [-12, 24.5]
+lon_bnds = [92.5, 142.5]
 
 
 # %%

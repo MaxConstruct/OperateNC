@@ -18,7 +18,7 @@ import shapefile as shp
 # %%
 
 #
-# map = shp.Reader(r'I:\coastaldem\crop_th\THA_Adm1_GISTA_plyg_v5.shp')
+map = shp.Reader(r'I:\coastaldem\crop_th\THA_Adm1_GISTA_plyg_v5.shp')
 # m = gs.read_file(r'I:\coastaldem\crop_th\THA_Adm1_GISTA_plyg_v5.shp')
 # %%
 # ax = plt

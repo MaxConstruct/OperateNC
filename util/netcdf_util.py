@@ -59,7 +59,7 @@ def kelvin_to_celsius(data, attr_name):
     return data
 
 
-def new_coord_array(lon_bound, lat_bound, res):
+def new_coord_array(lon_bound, lat_bound, res, x_name='lon', y_name='lat'):
     """
     Get new lat lot coordinate as xarray DataArray
     :param lon_bound: list of [min_lon, max_lon]
@@ -71,8 +71,8 @@ def new_coord_array(lon_bound, lat_bound, res):
     d_lon = np.arange(lon_bound[0], lon_bound[1], res)
     d_lat = np.arange(lat_bound[0], lat_bound[1], res)
 
-    _lon = xr.DataArray(d_lon, coords=[('lon', d_lon)], dims=['lon'])
-    _lat = xr.DataArray(d_lat, coords=[('lat', d_lat)], dims=['lat'])
+    _lon = xr.DataArray(d_lon, coords=[(x_name, d_lon)], dims=[x_name])
+    _lat = xr.DataArray(d_lat, coords=[(y_name, d_lat)], dims=[y_name])
 
     return _lon, _lat
 
@@ -89,7 +89,7 @@ def select_range(data, _min, _max):
     return (data >= _min) & (data <= _max)
 
 
-def crop_dataset_from_bound(data, lon_bound, lat_bound):
+def crop_dataset_from_bound(data, lon_bound, lat_bound, x_name='lon', y_name='lat'):
     """
     Crop dataset in to specific lat & lon boundary
     :param data: xarray.Dataset to be cropped
@@ -98,8 +98,8 @@ def crop_dataset_from_bound(data, lon_bound, lat_bound):
     :return: cropped dataset as xarray.Dataset
     """
 
-    mask_lon = select_range(data['lon'], lon_bound[0], lon_bound[1])
-    mask_lat = select_range(data['lat'], lat_bound[0], lat_bound[1])
+    mask_lon = select_range(data[x_name], lon_bound[0], lon_bound[1])
+    mask_lat = select_range(data[y_name], lat_bound[0], lat_bound[1])
 
     return data.isel(lat=mask_lat, lon=mask_lon, drop=True)
 
@@ -204,37 +204,6 @@ def merge_regrid(paths, out_dst, preprocess, _open_option=None, _save_option=Non
                                **_open_option) as mf_dataset:
             os.makedirs(os.path.dirname(out_dst), exist_ok=True)
             mf_dataset.to_netcdf(out_dst, **_save_option)
-
-    # Old code
-
-        # if h5netcdf_engine:
-        #     with xr.open_mfdataset(paths,
-        #                            preprocess=preprocess,
-        #                            concat_dim='time',
-        #                            parallel=True,
-        #                            chunks={'time': 3000},
-        #                            engine='h5netcdf',
-        #                            # decode_cf=True
-        #                            ) as mf_dataset:
-        #         encoding = {var: comp for var in mf_dataset.data_vars}
-        #         os.makedirs(os.path.dirname(out_dst), exist_ok=True)
-        #         mf_dataset.to_netcdf(out_dst,
-        #                              engine='h5netcdf',
-        #                              encoding=encoding
-        #                              )
-        # else:
-        #     with xr.open_mfdataset(paths,
-        #                            preprocess=preprocess,
-        #                            concat_dim='time',
-        #                            parallel=True,
-        #                            chunks={'time': 3000},
-        #                            # decode_cf=True
-        #                            ) as mf_dataset:
-        #         encoding = {var: comp for var in mf_dataset.data_vars}
-        #         os.makedirs(os.path.dirname(out_dst), exist_ok=True)
-        #         mf_dataset.to_netcdf(out_dst,
-        #                              encoding=encoding
-        #                              )
 
     except Exception as ex:
         print('\t\t', f"{bcolors.FAIL}Error {bcolors.ENDC} {str(ex)}")
