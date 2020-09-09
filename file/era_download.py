@@ -21,6 +21,9 @@ mn2t = '202.128'
 # 228.128 (tp: Total precipitation)
 tp = '228.128'
 
+# 228.004 (mean2t: Mean temperature at 2 metres)
+mean2t = '228.004'
+
 #%%
 # Get regrided dataset directly from server by passing parameters as seen below
 # This will be result no post-processing required after download dataset
@@ -32,7 +35,7 @@ server.retrieve({
     'expver':   '1',
     'grid':     '0.25/0.25',
     'levtype':  'sfc',
-    'param':    tp,
+    'param':    '228004',
     'step':     '12',
     'stream':   'oper',
     'time':     '00:00:00',
@@ -40,6 +43,6 @@ server.retrieve({
     'interpolation': 'bilinear',
     'use':      'infrequent',
     'format':   'netcdf',
-    'target':   r'H:\Observation\ERA-Interim\ei_tp_sea_025km_1979_2018.nc'
+    'target':   r'H:\Observation\ERA-Interim\ei_mean2t_sea_025km_1979_2018.nc'
 })
 

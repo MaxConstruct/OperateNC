@@ -55,7 +55,7 @@ def preprocess3(data):
     n_ds = data.isel(lat=mask_lat, lon=mask_lon, drop=True)
 
     # n_ds = ut.kelvin_to_celsius(n_ds, 'TMAX_GDS4_HTGL')
-    # n_ds = n_ds.interp(g4_lat_1=new_lat, g4_lon_2=new_lon)
+    n_ds = n_ds.interp(lat=new_lat, lon=new_lon)
 
     return n_ds
 
@@ -64,7 +64,7 @@ def preprocess3(data):
 
 open_option = {
     # 'chunks': {'time': 2000},
-    'concat_dim': 'initial_time0_hours',
+    'concat_dim': 'time',
     # 'engine': 'h5netcdf'
 }
 save_option = {
@@ -77,11 +77,11 @@ save_option = {
 
 # %%
 # currently working path
-working_path = Path(r'H:\Observation\TRMM_3B42_Daily (TMPA)\Dataset')
+working_path = Path(r'H:\Observation\CRU_TS_4.04')
 
 paths = [p for p in working_path.iterdir()]
 
-out_path = Path(r'H:\Observation\[SEA] TRMM_3B42_Daily (TMPA)')
+out_path = Path(r'H:\Observation\[SEA] CRU_TS_4.04')
 # %%
 status = ut.merge_regrid(paths=paths,
                          out_dst=out_path,
@@ -96,35 +96,19 @@ if not status[0]:
         os.remove(str(out_path))
 
 print('All Done')
-# %%
-mf = xr.open_mfdataset(paths)
-# %%
-mask_lon = ut.select_range(mf['g4_lon_2'], lon_bnds[0], lon_bnds[1])
-mask_lat = ut.select_range(mf['g4_lat_1'], lat_bnds[0], lat_bnds[1])
-# %%
-n_mf = mf.isel(g4_lat_1=mask_lat, g4_lon_2=mask_lon, drop=True)
-# %%
-from nco import Nco
 
-nco = Nco()
-nco.ncap2()
-out_path / paths[0].name + '.nc'
+#%%
 
-# %%
-i = 1
-s = len(paths)
-err = []
-for path in paths:
-    out = out_path / path.name.replace('.man', '.nc')
-    print(f'File[{i}/{s}]: {out}')
-    i += 1
-    # os.makedirs(out_path, exist_ok=True)
+for i, p in enumerate(paths):
+    out = out_path / p.name
+    print(i+1, len(paths), p)
+    ds = xr.load_dataset(p)
     try:
-        with xr.open_dataset(path) as dset:
-            dset = preprocess3(dset)
-            dset.to_netcdf(out)
-    except:
+        n_ds = preprocess3(ds)
+        n_ds.to_netcdf(out)
+    except Exception as e:
+        print('Error', str(e))
         if out.exists():
             os.remove(out)
-        err.append((i, out))
-        print('\terror')
+    ds.close()
+

@@ -129,7 +129,7 @@ def interpolate_like(model, sample):
     return model.interp(lat=new_lat, lon=new_lon)
 
 
-def test_path(name):
+def test_path(name='.'):
     """
     Get absolute path to testing directory
 
