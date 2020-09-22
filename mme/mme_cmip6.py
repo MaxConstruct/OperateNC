@@ -30,10 +30,8 @@ def get_paths(variable='', experiment='', _skip=None):
     _paths.sort()
     return _paths
 
-
-def cut_1998_2014(ds):
-    return ds.sel(time=ds.time.dt.year.isin(np.arange(1998, 2015)))
-
+#%%
+#%%
 
 def select_datetime(ds):
     return ds.sel(time=(

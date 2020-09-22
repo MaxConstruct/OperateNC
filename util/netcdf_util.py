@@ -158,9 +158,12 @@ def plot(data: xr.DataArray, time=None, savefig=None, show=True, set_global=Fals
     ax = plt.axes(projection=ccrs.PlateCarree())
 
     if time is None:
-        time = 0
-
-    data.isel(time=time).plot(ax=ax, **kwargs)
+        if 'time' in data.coords:
+            data.isel(time=0).plot(ax=ax, **kwargs)
+        else:
+            data.plot(ax=ax, **kwargs)
+    else:
+        data.isel(time=time).plot(ax=ax, **kwargs)
 
     if country_border:
         ax.add_feature(country_borders, edgecolor='darkgray')
@@ -225,3 +228,8 @@ def time_range(_paths):
     t0 = str(_paths[0]).split('_')[-1].split('-')[0]
     t1 = str(_paths[-1]).split('_')[-1].split('-')[-1].replace('.nc', '')
     return '{}-{}'.format(t0, t1)
+
+
+def select_year(ds, from_y, to_y):
+    return ds.sel(time=ds.time.dt.year.isin(np.arange(from_y, to_y + 1)))
+

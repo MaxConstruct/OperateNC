@@ -77,11 +77,11 @@ save_option = {
 
 # %%
 # currently working path
-working_path = Path(r'H:\Observation\CRU_TS_4.04')
+working_path = Path(r'H:\Observation\TRMM_3B42_Daily (TMPA)\Dataset')
 
 paths = [p for p in working_path.iterdir()]
 
-out_path = Path(r'H:\Observation\[SEA] CRU_TS_4.04')
+out_path = Path(r'H:\Observation\[SEA] TRMM_3B42_Daily (TMPA)')
 # %%
 status = ut.merge_regrid(paths=paths,
                          out_dst=out_path,
@@ -112,3 +112,29 @@ for i, p in enumerate(paths):
             os.remove(out)
     ds.close()
 
+#%%
+
+s = len(paths)
+err = []
+drop_var = [
+ 'randomError_cnt',
+ 'HQprecipitation_cnt',
+ 'randomError',
+ 'HQprecipitation',
+ 'IRprecipitation',
+ 'precipitation_cnt',
+ 'IRprecipitation_cnt'
+]
+for i, path in enumerate(paths):
+    out = out_path / path.name.replace('.man', '.nc')
+    print(f'File[{i}/{s}]: {out}')
+    # os.makedirs(out_path, exist_ok=True)
+    try:
+        with xr.open_dataset(path, drop_variables=drop_var) as dset:
+            dset = preprocess3(dset)
+            dset.to_netcdf(out)
+    except:
+        if out.exists():
+            os.remove(out)
+        err.append((i, out))
+        print('\terror')

@@ -30,19 +30,19 @@ mean2t = '228.004'
 server.retrieve({
     'class':    'ei',
     'dataset':  'interim',
-    'date':     '1979-01-01/to/2018-12-31',
+    'date':     '1998-01-01/to/2014-12-31',
     'area':     '24.5/92.5/-12.5/142.5',
     'expver':   '1',
     'grid':     '0.25/0.25',
     'levtype':  'sfc',
-    'param':    '228004',
+    'param':    'mean2t',
     'step':     '12',
     'stream':   'oper',
     'time':     '00:00:00',
     'type':     'fc',
     'interpolation': 'bilinear',
     'use':      'infrequent',
-    'format':   'netcdf',
-    'target':   r'H:\Observation\ERA-Interim\ei_mean2t_sea_025km_1979_2018.nc'
+    # 'format':   'netcdf',
+    'target':   r'H:\Observation\ERA-Interim\ei_mean2t_sea_025km_1979_2018.grib'
 })
 
