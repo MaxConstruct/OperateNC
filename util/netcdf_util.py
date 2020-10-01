@@ -101,7 +101,7 @@ def crop_dataset_from_bound(data, lon_bound, lat_bound, x_name='lon', y_name='la
     mask_lon = select_range(data[x_name], lon_bound[0], lon_bound[1])
     mask_lat = select_range(data[y_name], lat_bound[0], lat_bound[1])
 
-    return data.isel(lat=mask_lat, lon=mask_lon, drop=True)
+    return data.isel(lat=mask_lat, lon=mask_lon, drop=False)
 
 
 def crop_dataset_like(model, sample):
@@ -158,7 +158,7 @@ def plot(data: xr.DataArray, time=None, savefig=None, show=True, set_global=Fals
     ax = plt.axes(projection=ccrs.PlateCarree())
 
     if time is None:
-        if 'time' in data.coords:
+        if 'time' in data.coords and data.time.shape != ():
             data.isel(time=0).plot(ax=ax, **kwargs)
         else:
             data.plot(ax=ax, **kwargs)
@@ -179,6 +179,20 @@ def plot(data: xr.DataArray, time=None, savefig=None, show=True, set_global=Fals
         plt.show()
     plt.clf()
     plt.close()
+
+
+def sim_plot(ds, **kwargs):
+    """
+    Simple plotting graph without any setting for matplotlib.
+    :param ds: DataArray to plot
+    :param kwargs: argument pass to DataArray.plot()
+    :return: void
+    """
+    ds.plot(**kwargs)
+    plt.show()
+    plt.clf()
+    plt.close()
+
 
 
 def merge_regrid(paths, out_dst, preprocess, _open_option=None, _save_option=None):

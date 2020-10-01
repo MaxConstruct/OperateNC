@@ -58,32 +58,18 @@ NorESM1-M
 #%%
 selected_model = [i.strip() for i in
 """
-ACCESS1.0
-ACCESS1.3
-CMCC-CESM
-CMCC-CM
-CMCC-CMS
+ACCESS1-0
+ACCESS1-3
 CNRM-CM5
-CSIRO-Mk3.6.0
 CanESM2
 EC-EARTH
 FGOALS-g2
-FGOALS-s2
-GFDL-CM3
-GFDL-ESM2G
 GFDL-ESM2M
-HadGEM2-AO
-HadGEM2-CC
-HadGEM2-ES
-INM-CM4
-IPSL-CM5A-LR 
-IPSL-CM5A-MR
-IPSL-CM5B-LR
+inmcm4
+IPSL-CM5A-LR
 MIROC-ESM
-MIROC-ESM-CHEM
 MIROC5
 MPI-ESM-LR
-MPI-ESM-MR
 MRI-CGCM3
 NorESM1-M
 """.split('\n') if len(i.strip()) > 0]
@@ -97,9 +83,20 @@ def req_str(model_name):
 
 # %%
 links = []
-for name in model_names:
+for name in selected_model:
     print(name)
     re = requests.get(req_str(name))
-    links += subtract_link(re.content.decode('UTF-8'))
+    links.append(re.content.decode('UTF-8').split('EOF--dataset.file.url.chksum_type.chksum'))
 link_arr = np.array(links)
 print('Done.')
+
+#%%
+def check_name(link:str):
+    return link.split('/')[-1].split('_')[2] in selected_model
+#%%
+with open(r'C:\Users\DEEP\PycharmProjects\NCFile\file\cmip5_all.txt') as f:
+    ls = f.readlines()
+ls = [i.strip() for i in ls]
+
+sel_link = []
+
