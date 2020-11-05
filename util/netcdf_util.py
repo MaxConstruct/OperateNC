@@ -4,6 +4,8 @@
 import os
 
 # xarray, is the most important library, used for manipulate netCDF Dataset operation
+from pathlib import Path
+
 import xarray as xr
 import numpy as np
 
@@ -48,15 +50,19 @@ def shift_to_180(data):
     return data.assign_coords(lon=(((data.lon + 180) % 360) - 180)).sortby('lon')
 
 
-def kelvin_to_celsius(data, attr_name):
+def kelvin_to_celsius(data, var_name):
     """
 
     :param data: xrray Dataset
-    :param attr_name: variable name for converting, e.g. 'tasmax' or 'tasmin'
+    :param var_name: variable name for converting, e.g. 'tasmax' or 'tasmin'
     :return: converted dataset
     """
-    data[attr_name] = data[attr_name] - 273.15
+    data[var_name] = data[var_name] - 273.15
     return data
+
+
+def km_m2_s__to__mm_day(da):
+    return da * 86400
 
 
 def new_coord_array(lon_bound, lat_bound, res, x_name='lon', y_name='lat'):
@@ -137,7 +143,7 @@ def test_path(name='.'):
     :param name: name to join to test directory
     :return: absolute path
     """
-    return os.path.join(TEST_ROOT_DIR, name)
+    return TEST_ROOT_DIR / name
 
 
 def plot(data: xr.DataArray, time=None, savefig=None, show=True, set_global=False, country_border=True, **kwargs):
@@ -194,7 +200,6 @@ def sim_plot(ds, **kwargs):
     plt.close()
 
 
-
 def merge_regrid(paths, out_dst, preprocess, _open_option=None, _save_option=None):
     """
     Open multiple dataset from list of paths, then, merging and regridding
@@ -246,4 +251,31 @@ def time_range(_paths):
 
 def select_year(ds, from_y, to_y):
     return ds.sel(time=ds.time.dt.year.isin(np.arange(from_y, to_y + 1)))
+
+
+def save_file(path: Path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def lsdir(path):
+    if isinstance(path, Path):
+        return sorted(list(path.iterdir()))
+    elif isinstance(path, str):
+        return sorted(list(Path(path).iterdir()))
+
+def get_mfds(paths, check_inf=True):
+    mf = []
+    for i, p in enumerate(paths):
+        mf.append(xr.open_dataarray(p))
+    con = xr.concat(mf, dim='id')
+    if check_inf:
+        return con.where(~np.isinf(con))
+    return con
+
+
+def drange(y_start, y_stop, freq='MS'):
+    from pandas import date_range
+    return date_range(f'{y_start}-01-01', f'{y_stop}-12-31', freq=freq)
+
 

@@ -77,7 +77,7 @@ def plot_sea_levels(scenario, out, ncols=2, nrows=2, figsize=(14, 14)):
             label=None,
             add_colorbar=False
         )
-        tmp_im.where((tmp_im >= 0) & ((scenario[i] - tmp_im) > 0)).plot(
+        tmp_im.where_greater((tmp_im >= 0) & ((scenario[i] - tmp_im) > 0)).plot(
             ax=ax,
             levels=np.arange(-1, 4.5, 0.25),
             cmap='winter_r'

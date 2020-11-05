@@ -1,3 +1,5 @@
 .idea/
 .pytest_cache/
+.bias-lib
+dask-worker-space
 test.nc
